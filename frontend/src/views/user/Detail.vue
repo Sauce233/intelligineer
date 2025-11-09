@@ -3,7 +3,7 @@ import Tag from '@/components/Tag.vue';
 import {request} from '@/utils/axios';
 import type {Record, User} from '@/utils/tables';
 import {formatDate, type List} from '@/utils/utils';
-import {Back} from '@element-plus/icons-vue';
+import {Back, Delete, Edit} from '@element-plus/icons-vue';
 import {computed, reactive, ref, watchEffect} from 'vue';
 import { use } from 'echarts/core';
 import {
@@ -68,6 +68,8 @@ const form = reactive<Form>({
       <div class="text-lg">{{user.name}}</div>
       <tag v-for="r in user.roles" :key="r.id" :color="r.color">{{r.name}}</tag>
       <div class="text-subtle">{{user.email}}</div>
+      <el-button :icon="Edit" circle class="ms-auto" @click="isDialogOpen = true" />
+      <el-button :icon="Delete" circle />
     </div>
 
     <div class="flex justify-between">

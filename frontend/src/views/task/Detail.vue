@@ -5,15 +5,24 @@ import { request } from '@/utils/axios';
 import type { Task } from '@/utils/tables';
 import { formatDate } from '@/utils/utils';
 import { Back, Edit } from '@element-plus/icons-vue';
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import {useRouteParams} from '@vueuse/router';
+import {useI18n} from 'vue-i18n';
+import TaskEditor, {type Form} from '@/components/editor/TaskEditor.vue';
 
 const id = useRouteParams('id')
 const task = ref<Task | null>(null)
 const route = useRoute()
+const isDialogOpen = ref(false)
 const session = useSessionStore()
-request<Task>('GET', `/tasks/${route.params.id}`).then(res => task.value = res)
+const load = () => request<Task>('GET', `/tasks/${route.params.id}`).then(res => task.value = res)
+load()
+
+const { t } = useI18n({})
+const form = reactive<Form>({
+  name: '', profile: '', time: [new Date(), new Date()], statusId: 0,
+})
 
 </script>
 
@@ -26,7 +35,7 @@ request<Task>('GET', `/tasks/${route.params.id}`).then(res => task.value = res)
         {{task.project.name}}
       </span>
       <tag :color="task.status.color">{{task.status.name}}</tag>
-      <el-button :icon="Edit" class="ms-auto" @click="$router.push(`/tasks/${id}/edit`)">
+      <el-button :icon="Edit" class="ms-auto" @click="isDialogOpen = true">
         {{$t('taskDetail.editButton')}}
       </el-button>
     </div>
@@ -62,5 +71,14 @@ request<Task>('GET', `/tasks/${route.params.id}`).then(res => task.value = res)
     <router-view>
     </router-view>
   </div>
+
+  <el-dialog v-model="isDialogOpen" :title="t('dialogTitle')">
+    <task-editor v-model="form" />
+    <template #footer>
+      <el-button @click="request('PATCH', `/tasks/${id}`, form).then(ok => ok && load())">
+        {{$t('confirm')}}
+      </el-button>
+    </template>
+  </el-dialog>
 
 </template>

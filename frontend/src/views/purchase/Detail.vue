@@ -1,15 +1,27 @@
 <script setup lang="ts">
+import type {Form} from '@/components/editor/PurchaseEditor.vue';
+import PurchaseEditor from '@/components/editor/PurchaseEditor.vue';
 import Tag from '@/components/Tag.vue';
 import {request} from '@/utils/axios';
 import type {Purchase} from '@/utils/tables';
 import {Back, Edit} from '@element-plus/icons-vue';
-import {ref} from 'vue';
+import {useRouteQuery} from '@vueuse/router';
+import {reactive, ref} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {useRoute} from 'vue-router';
 
+const id = useRouteQuery('id')
 const route = useRoute()
 
 const purchase = ref<Purchase | null>(null)
-request<Purchase>('GET', `/purchases/${route.params.id}`).then(res => purchase.value = res)
+const load = () => request<Purchase>('GET', `/purchases/${route.params.id}`).then(res => purchase.value = res)
+load()
+
+const isDialogOpen = ref(false)
+const form = reactive<Form>({
+  name: '', profile: '', statusId: 0,
+})
+const { t } = useI18n({})
 </script>
 
 <template>
@@ -21,7 +33,9 @@ request<Purchase>('GET', `/purchases/${route.params.id}`).then(res => purchase.v
         {{purchase.supplier.name}}
       </div>
       <tag :color="purchase.status.color">{{purchase.status.name}}</tag>
-      <el-button :icon="Edit" class="ms-auto">{{$t('edit')}}</el-button>
+      <el-button :icon="Edit" class="ms-auto" @click="isDialogOpen = true">
+        {{$t('edit')}}
+      </el-button>
     </div>
     <div class="bg-subtle rounded-2xl p-4">{{purchase.profile}}</div>
     <div class="font-bold text-xl">{{$t('totalPrice')}}: {{purchase.materials.reduce((sum, v) => sum + v.price * v.quantity, 0)}}</div>
@@ -39,4 +53,14 @@ request<Purchase>('GET', `/purchases/${route.params.id}`).then(res => purchase.v
       </div>
     </div>
   </div>
+
+  <el-dialog v-model="isDialogOpen" :title="t('dialogTitle')">
+    <purchase-editor v-model="form" />
+    <template #footer>
+      <el-button @click="request('PATCH', `/purchases/${id}`, form).then(ok => ok && load())">
+        {{t('confirm')}}
+      </el-button>
+    </template>
+  </el-dialog>
+
 </template>

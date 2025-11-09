@@ -3,13 +3,23 @@ import {request} from '@/utils/axios';
 import type {Record} from '@/utils/tables';
 import {useUrlSearchParams} from '@vueuse/core';
 import {ref, watchEffect} from 'vue';
-import {Search} from '@element-plus/icons-vue';
+import {Plus, Search} from '@element-plus/icons-vue';
 import {shortcuts, type List} from '@/utils/utils';
+import {useI18n} from 'vue-i18n';
+import RecordEditor, {type Form} from '@/components/editor/RecordEditor.vue';
+import {reactive} from 'vue';
 
 const records = ref<List<Record> | null>(null);
 
-const params = useUrlSearchParams<globalThis.Record<string, string>>('history')
+const params = useUrlSearchParams<any>('history')
 watchEffect(async () => records.value = await request('GET', '/records', params))
+
+const isDialogOpen = ref(false)
+
+const { t } = useI18n({})
+const form = reactive<Form>({
+  title: '', content: '', minutes: 0,
+})
 </script>
 
 <template>
@@ -18,9 +28,7 @@ watchEffect(async () => records.value = await request('GET', '/records', params)
 
     <div class="flex justify-between">
       <div class="text-xl">{{$t('record')}}</div>
-      <el-button @click="$router.push('/records/new')">
-        {{$t('add', { name: $t('record') })}}
-      </el-button>
+      <el-button @click="isDialogOpen = true" :icon="Plus" circle />
     </div>
 
     <div class="space-x-4">
@@ -77,6 +85,15 @@ watchEffect(async () => records.value = await request('GET', '/records', params)
     />
 
   </div>
+
+  <el-dialog v-model="isDialogOpen" :title="t('dialogTitle')">
+    <record-editor v-model="form" />
+    <template #footer>
+      <el-button @click="">
+        {{t('confirm')}}
+      </el-button>
+    </template>
+  </el-dialog>
 
 </template>
 

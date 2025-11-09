@@ -1,31 +1,41 @@
 <script setup lang="ts">
+import type {Form} from '@/components/editor/SupplierEditor.vue';
+import SupplierEditor from '@/components/editor/SupplierEditor.vue';
 import {request} from '@/utils/axios';
-import type {Purchase, Supplier} from '@/utils/tables';
+import type {Supplier} from '@/utils/tables';
 import {formatDate} from '@/utils/utils';
-import {Back} from '@element-plus/icons-vue';
+import {Back, Delete, Edit} from '@element-plus/icons-vue';
 import {useRouteParams} from '@vueuse/router';
-import {ref, watchEffect} from 'vue';
+import {reactive, ref} from 'vue';
+import {useI18n} from 'vue-i18n';
 
 const id = useRouteParams('id')
 
 const supplier = ref<Supplier | null>(null)
 
-request<Supplier>('GET', `/suppliers/${id.value}`).then(res => supplier.value = res)
+const load = () => request<Supplier>('GET', `/suppliers/${id.value}`).then(res => supplier.value = res)
+load()
 
-const purchases = ref<{
-  data: Purchase[],
-  total: number,
-} | null>(null)
+const isDialogOpen = ref(false)
 
-watchEffect(async () => purchases.value = await request('GET', '/purchases', { supplierId: id.value }))
+const form = reactive<Form>({
+  name: '', address: '', profile: '',
+})
+
+const { t } = useI18n({})
+
 </script>
 
 <template>
   <div v-if="supplier" class="max-w-5xl mx-auto flex flex-col gap-4 p-4">
 
     <div class="card flex gap-2 items-center flex-wrap">
-      <el-button @click="$router.back" :icon="Back">{{$t('back')}}</el-button>
+      <el-button @click="$router.back" :icon="Back">
+        {{$t('back')}}
+      </el-button>
       <div>{{supplier.name}}</div>
+      <el-button class="ms-auto" :icon="Edit" circle @click="isDialogOpen = true; Object.assign(form, supplier)" />
+      <el-button :icon="Delete" circle @click="request('DELETE', `/suppliers/${id}`).then(ok => ok && $router.push(`/suppliers`))" />
     </div>
 
     <div class="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
@@ -70,4 +80,13 @@ watchEffect(async () => purchases.value = await request('GET', '/purchases', { s
     <router-view />
 
   </div>
+
+  <el-dialog v-model="isDialogOpen" :title="t('dialogTitle')">
+    <supplier-editor v-model="form" />
+    <template #footer>
+      <el-button @click="request('PATCH', `/suppliers/${id}`, form).then(ok => ok && load())">
+        {{t('confirm')}}
+      </el-button>
+    </template>
+  </el-dialog>
 </template>

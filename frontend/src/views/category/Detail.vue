@@ -25,5 +25,7 @@ request<Category>('GET', `/categories/${id.value}`).then(res => category.value =
       {{category.profile}}
     </div>
 
+    <router-view />
+
   </div>
 </template>

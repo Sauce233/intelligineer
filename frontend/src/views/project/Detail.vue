@@ -5,13 +5,22 @@ import {request} from '@/utils/axios';
 import type {Project} from '@/utils/tables';
 import {formatDate} from '@/utils/utils';
 import {Back, Delete, Edit} from '@element-plus/icons-vue';
-import {ref} from 'vue';
+import {reactive, ref} from 'vue';
 import {useRouteParams} from '@vueuse/router';
+import ProjectEditor, {type Form} from '@/components/editor/ProjectEditor.vue';
+import {useI18n} from 'vue-i18n';
 
 const id = useRouteParams('id')
 const project = ref<Project | null>(null)
 const session = useSessionStore()
 request<Project>('GET', `/projects/${id.value}`).then(res => project.value = res)
+
+const isDialogOpen = ref(false)
+const form = reactive<Form>({
+  name: '', profile: '', offer: 0, budget: 0, statusId: 0,
+})
+
+const { t } = useI18n({})
 
 </script>
 
@@ -22,7 +31,7 @@ request<Project>('GET', `/projects/${id.value}`).then(res => project.value = res
       <span>{{$t('project')}}: {{project.name}}</span>
       <span class="link" @click="$router.push(`/clients/${project.client.id}`)">{{project.client.name}}</span>
       <tag :color="project.status.color">{{project.status.name}}</tag>
-      <el-button :icon="Edit" class="ms-auto" circle @click="$router.push(`/projects/${id}/edit`)"></el-button>
+      <el-button :icon="Edit" class="ms-auto" circle @click="isDialogOpen = true" />
       <el-button :icon="Delete" circle @click="request('DELETE', `/projects/${id}`).then(v => v && $router.back())">
       </el-button>
     </div>
@@ -56,8 +65,16 @@ request<Project>('GET', `/projects/${id.value}`).then(res => project.value = res
       </router-link>
     </div>
 
-    <router-view>
-    </router-view>
+    <router-view />
   </div>
+
+  <el-dialog v-model="isDialogOpen" :title="t('dialogTitle')">
+    <project-editor v-model="form" />
+    <template #footer>
+      <el-button>
+        {{$t('confirm')}}
+      </el-button>
+    </template>
+  </el-dialog>
 
 </template>

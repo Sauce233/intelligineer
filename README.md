@@ -4,7 +4,7 @@
 
 一个功能完整的工程项目管理系统，适用于建筑、施工等工程行业的全流程数字化管理。
 
-![项目列表]('./images/project_list.png')
+![项目列表](./images/project_list.png)
 
 ## ✨ 核心功能
 

@@ -1,0 +1,52 @@
+@import "tailwindcss";
+@source inline("bg-{red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,neutral,stone}-{50,{100..900..100},950}");
+
+:root {
+  --el-border-radius-base: 16px;
+  --card-bg-color: #ffffff;
+  --el-menu-item-height: auto;
+}
+
+.el-dialog {
+  @apply w-11/12 max-w-3xl;
+}
+
+html.dark {
+  --bg-color: #121212;
+  --card-bg-color: #1e1e1e;
+}
+
+.card {
+  padding: 1rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: 0.2s ease;
+  border-width: 1px;
+  @apply bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600;
+}
+
+.card:hover {
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 10px 0px;
+}
+
+.link {
+  @apply text-blue-600 hover:underline cursor-pointer;
+}
+
+.text-subtle {
+  @apply text-slate-600 dark:text-slate-400 text-sm;
+}
+
+.bg-subtle {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+@utility scrollbar-hidden {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.el-pagination {
+  @apply bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 border rounded-2xl p-2;
+}
